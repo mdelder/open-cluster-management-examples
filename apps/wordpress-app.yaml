@@ -1,0 +1,187 @@
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Channel
+metadata:
+  name: wordpress-app-latest
+  namespace: wordpress-app
+spec:
+  type: GitHub
+  pathname: https://github.com/kubernetes-sigs/kustomize.git
+  # secretRef:
+  #   name: github-credentials
+---
+apiVersion: app.k8s.io/v1beta1
+kind: Application
+metadata:
+  name: wordpress-app
+  namespace: wordpress-app
+spec:
+  componentKinds:
+  - group: apps.open-cluster-management.io
+    kind: Subscription
+  descriptor: {}
+  selector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - wordpress-app
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Subscription
+metadata:
+  annotations:
+    apps.open-cluster-management.io/github-path: examples/wordpress
+  name: wordpress-app
+  namespace: wordpress-app
+  labels:
+    app: wordpress-app
+spec:
+  channel: wordpress-app/wordpress-app-latest
+  placement:
+    placementRef:
+      kind: PlacementRule
+      name: dev-clusters
+  packageOverrides:
+  - packageName: kustomization
+    packageOverrides:
+    - resources:
+      - wordpress
+      - mysql
+      patchesStrategicMerge:
+      - patch.yaml
+      namePrefix: demo-
+      vars:
+      - name: WORDPRESS_SERVICE
+        objref:
+          kind: Service
+          name: wordpress
+          apiVersion: v1
+      - name: MYSQL_SERVICE
+        objref:
+          kind: Service
+          name: mysql
+          apiVersion: v1
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policygroup-wordpress-app
+  namespace: wordpress-app
+spec:
+  disabled: false
+  remediationAction: enforce
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-wordpress-scc
+      spec:
+        namespaceSelector:
+          exclude: ["kube-*"]
+          include: ["wordpress-app"]
+        object-templates:
+          - complianceType: musthave
+            objectDefinition:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: Role
+              metadata:
+                name: wordpress-app-scc
+                namespace: wordpress-app
+              rules:
+              - apiGroups:
+                - security.openshift.io
+                resourceNames:
+                - wordpress-app-scc
+                resources:
+                - securitycontextconstraints
+                verbs:
+                - use
+          - complianceType: mustonlyhave
+            objectDefinition:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: RoleBinding
+              metadata:
+                name: wordpress-app-scc
+                namespace: wordpress-app
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: Role
+                name: wordpress-app-scc
+              subjects:
+              - apiGroup: rbac.authorization.k8s.io
+                kind: Group
+                name: system:serviceaccounts:wordpress-app:default
+          - complianceType: mustonlyhave
+            objectDefinition:
+              allowHostDirVolumePlugin: false
+              allowHostIPC: false
+              allowHostNetwork: false
+              allowHostPID: false
+              allowHostPorts: false
+              allowPrivilegeEscalation: true
+              allowPrivilegedContainer: false
+              allowedCapabilities: null
+              apiVersion: security.openshift.io/v1
+              defaultAddCapabilities: null
+              fsGroup:
+                type: RunAsAny
+              groups:
+              - system:cluster-admins
+              kind: SecurityContextConstraints
+              metadata:
+                annotations:
+                  kubernetes.io/description: anyuid provides all features of the restricted SCC
+                    but allows users to run with any UID and any GID.
+                name: wordpress-app-scc
+                labels:
+                  app: wordpress-app-scc
+              priority: 10
+              readOnlyRootFilesystem: false
+              requiredDropCapabilities:
+              - MKNOD
+              runAsUser:
+                type: RunAsAny
+              seLinuxContext:
+                type: MustRunAs
+              supplementalGroups:
+                type: RunAsAny
+              users:
+                - 'system:serviceaccount:wordpress-app:default'
+              volumes:
+              - configMap
+              - downwardAPI
+              - emptyDir
+              - persistentVolumeClaim
+              - projected
+              - secret
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-policy-wordpress-scc
+  namespace: wordpress-app
+placementRef:
+  name: dev-clusters
+  kind: PlacementRule
+  apiGroup: apps.open-cluster-management.io
+subjects:
+- name: policygroup-wordpress-app
+  kind: Policy
+  apiGroup: policy.open-cluster-management.io
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: dev-clusters
+  namespace: wordpress-app
+spec:
+  clusterConditions:
+  - status: "True"
+    type: ManagedClusterConditionAvailable
+  clusterSelector:
+    clusterReplicas: 2
+    matchExpressions: []
+    matchLabels:
+      purpose: development

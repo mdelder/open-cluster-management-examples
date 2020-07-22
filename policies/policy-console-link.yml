@@ -1,0 +1,63 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-consolelink
+  namespace: open-cluster-management-policies
+  annotations:
+    policy.open-cluster-management.io/standards: NIST-CSF
+    policy.open-cluster-management.io/categories: PR.IP Information Protection Processes and Procedures
+    policy.open-cluster-management.io/controls: PR.IP-1 Baseline configuration
+spec:
+  disabled: false
+  remediationAction: enforce
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-securitycontextconstraints-example
+      spec:
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: console.openshift.io/v1
+            kind: ConsoleLink
+            metadata:
+              labels:
+                app.kubernetes.io/managed-by: Helm
+              name: acm-console-link
+            spec:
+              applicationMenu:
+                imageURL: https://multicloud-console.apps.kilo.demo.red-chesterfield.com/multicloud/header/graphics/openshift.svg
+                section: Red Hat Applications
+              href: https://multicloud-console.apps.kilo.demo.red-chesterfield.com/multicloud/clusters
+              location: ApplicationMenu
+              text: Managed By Red Hat Advanced Cluster Management
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-policy-consolelink
+  namespace: open-cluster-management-policies
+placementRef:
+  name: placement-policy-consolelink
+  kind: PlacementRule
+  apiGroup: apps.open-cluster-management.io
+subjects:
+- name: policy-consolelink
+  kind: Policy
+  apiGroup: policy.open-cluster-management.io
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: placement-policy-consolelink
+  namespace: open-cluster-management-policies
+spec:
+  clusterConditions:
+  - status: "True"
+    type: ManagedClusterConditionAvailable
+  clusterSelector:
+    matchExpressions: []
+    matchLabels:
+      vendor: OpenShift

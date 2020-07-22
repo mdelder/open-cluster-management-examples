@@ -1,0 +1,104 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-scc-restricted
+  namespace: open-cluster-management-policies
+  annotations:
+    policy.open-cluster-management.io/standards: NIST-CSF
+    policy.open-cluster-management.io/categories: PR.PT Protective Technology
+    policy.open-cluster-management.io/controls: PR.PT-3 Least Functionality
+spec:
+  remediationAction: inform
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-securitycontextconstraints-restricted
+        spec:
+          remediationAction: inform # will be overridden by remediationAction in parent policy
+          severity: high
+          namespaceSelector:
+            exclude: ["kube-*"]
+            include: ["default"]
+          object-templates:
+          - complianceType: musthave
+            objectDefinition:
+              allowHostPorts: false
+              priority: {}
+              requiredDropCapabilities:
+                - KILL
+                - MKNOD
+                - SETUID
+                - SETGID
+              allowPrivilegedContainer: false
+              runAsUser:
+                type: MustRunAsRange
+              users: []
+              allowHostDirVolumePlugin: false
+              allowHostIPC: false
+              seLinuxContext:
+                type: MustRunAs
+              readOnlyRootFilesystem: false
+              metadata:
+                annotations:
+                  kubernetes.io/description: >-
+                    restricted denies access to all host features and requires pods to be run
+                    with a UID, and SELinux context that are allocated to the namespace.  This
+                    is the most restrictive SCC and it is used by default for authenticated
+                    users.
+                creationTimestamp: '2020-07-14T17:57:05Z'
+                generation: 1
+                name: restricted
+                resourceVersion: '5901'
+                selfLink: /apis/security.openshift.io/v1/securitycontextconstraints/restricted
+                uid: 6a0aeef1-c06b-4647-b437-2f9054646b7d
+              fsGroup:
+                type: MustRunAs
+              groups:
+                - 'system:authenticated'
+              kind: SecurityContextConstraints
+              defaultAddCapabilities: null
+              supplementalGroups:
+                type: RunAsAny
+              volumes:
+                - configMap
+                - downwardAPI
+                - emptyDir
+                - persistentVolumeClaim
+                - projected
+                - secret
+              allowHostPID: false
+              allowHostNetwork: false
+              allowPrivilegeEscalation: true
+              apiVersion: security.openshift.io/v1
+              allowedCapabilities: {}
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-policy-scc
+  namespace: open-cluster-management-policies
+placementRef:
+  name: placement-policy-scc
+  kind: PlacementRule
+  apiGroup: apps.open-cluster-management.io
+subjects:
+- name: policy-scc-restricted
+  kind: Policy
+  apiGroup: policy.open-cluster-management.io
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: placement-policy-scc
+  namespace: open-cluster-management-policies
+spec:
+  clusterConditions:
+  - status: "True"
+    type: ManagedClusterConditionAvailable
+  clusterSelector:
+    matchExpressions: []
+    matchLabels:
+      vendor: OpenShift
