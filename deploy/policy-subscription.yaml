@@ -1,0 +1,79 @@
+apiVersion: apps.open-cluster-management.io/v1
+kind: Channel
+metadata:
+  name: example-policies-latest
+  namespace: open-cluster-management-policies
+spec:
+  type: GitHub
+  pathname: https://github.com/mdelder/open-cluster-management-examples.git
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Subscription
+metadata:
+  annotations:
+    apps.open-cluster-management.io/github-path: policies
+  name: example-policies
+  namespace: open-cluster-management-policies
+  labels:
+    app: example-policies
+spec:
+  channel: open-cluster-management-policies/example-policies-latest
+  placement:
+    local: true
+  packageOverrides:
+  - packageName: kustomization
+    packageOverrides:
+    - resources:
+      - policy-auth-provider.yaml
+      - policy-console-link.yml
+      - policy-scc.yaml
+      - dev-clusters-placementrule.yaml
+      - production-clusters-placementrule.yaml
+      - policy-namespace.yaml
+      - policy-rolebinding.yaml
+      - policy-container-security.yaml
+      - policy-certificate.yaml
+      - policy-role.yaml
+      - policy-iam.yaml
+      patchesStrategicMerge:
+      - |-
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: Policy
+        metadata:
+          name: policy-consolelink
+          namespace: open-cluster-management-policies
+        spec:
+          policy-templates:
+          - objectDefinition:
+              apiVersion: policy.open-cluster-management.io/v1
+              kind: ConfigurationPolicy
+              metadata:
+                name: policy-securitycontextconstraints-example
+              spec:
+                object-templates:
+                - complianceType: musthave
+                  objectDefinition:
+                    apiVersion: console.openshift.io/v1
+                    kind: ConsoleLink
+                    metadata:
+                      name: acm-console-link
+                    spec:
+                      applicationMenu:
+                        imageURL: https://www.vectorlogo.zone/logos/openshift/openshift-icon.svg
+                      href: https://multicloud-console.apps.kilo.demo.red-chesterfield.com/multicloud/clusters
+      - |-
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: Policy
+        metadata:
+          name: policy-auth-provider
+          namespace: open-cluster-management-policies
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                data:
+                  htpasswd: "OVERRIDE"
+                kind: Secret
+                metadata:
+                  name: htpass-secret
+                  namespace: openshift-config

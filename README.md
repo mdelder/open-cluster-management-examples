@@ -1,13 +1,25 @@
-# kustomization.yaml
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
 
-# namespace to deploy all Resources to
-namespace: open-cluster-management-policies
+## Overview
 
-generatorOptions:
-  disableNameSuffixHash: true
+The examples in this repository are focused on helping new users understand what is possible with `open-cluster-management`.
 
+These are here for reference and can be modified within the terms of the Apache2 License.
+
+## Deploying the examples
+
+### Policies
+
+Most policies demonstrate how to apply various kinds of Configuration across your fleet of clusters.
+There are 2 policies that have placeholder values that will need to be updated for your specific usage.
+
+To update the `.htpasswd` configuration for the custom Authentication provider, edit the `kustomization.yaml`
+and replace `TO_BE_WITH_OVERRIDDEN_BASE64_ENCODED_HTPASSWD_FILE_CONTENTS`. Protect the contents of the file
+once edited as the secret is used to add authenticated users to your cluster.
+
+Also, update `TO_BE_OVERRIDDEN_WITH_RHACM_WEB_CONSOLE_URL` with the URL for your RHACM console, for example
+`https://multicloud-console.apps.kilo.demo.red-chesterfield.com/multicloud/clusters`
+
+```yaml
 patchesStrategicMerge:
 - |-
   apiVersion: policy.open-cluster-management.io/v1
@@ -45,21 +57,13 @@ patchesStrategicMerge:
       - complianceType: musthave
         objectDefinition:
           data:
-            htpasswd: "TO_BE_WITH_OVERRIDDEN_BASE64_ENCODED_HTPASSWD_FILE_CONTENTS"
+            htpasswd: "OVERRIDDEN_BASE64_ENCODED_HTPASSWD_FILE_CONTENTS"
           kind: Secret
           metadata:
             name: htpass-secret
             namespace: openshift-config
-# list of Resource Config to be Applied
-resources:
-  - policy-auth-provider.yaml
-  - policy-console-link.yml
-  - policy-scc.yaml
-  - dev-clusters-placementrule.yaml
-  - production-clusters-placementrule.yaml
-  - policy-namespace.yaml
-  - policy-rolebinding.yaml
-  - policy-container-security.yaml
-  - policy-certificate.yaml
-  - policy-role.yaml
-  - policy-iam.yaml
+```
+
+```bash
+kustomize build policies/ | oc apply -f -
+```
