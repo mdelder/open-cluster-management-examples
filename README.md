@@ -27,22 +27,7 @@ patchesStrategicMerge:
   metadata:
     name: policy-consolelink
     namespace: open-cluster-management-policies
-  spec:
-    policy-templates:
-    - objectDefinition:
-        apiVersion: policy.open-cluster-management.io/v1
-        kind: ConfigurationPolicy
-        metadata:
-          name: policy-securitycontextconstraints-example
-        spec:
-          object-templates:
-          - complianceType: musthave
-            objectDefinition:
-              apiVersion: console.openshift.io/v1
-              kind: ConsoleLink
-              metadata:
-                name: acm-console-link
-              spec:
+...
                 applicationMenu:
                   imageURL: https://www.vectorlogo.zone/logos/openshift/openshift-icon.svg
                 href: TO_BE_OVERRIDDEN_WITH_RHACM_WEB_CONSOLE_URL
@@ -52,16 +37,11 @@ patchesStrategicMerge:
   metadata:
     name: policy-auth-provider
     namespace: open-cluster-management-policies
-  spec:
-    object-templates:
-      - complianceType: musthave
-        objectDefinition:
+...
           data:
             htpasswd: "OVERRIDDEN_BASE64_ENCODED_HTPASSWD_FILE_CONTENTS"
           kind: Secret
-          metadata:
-            name: htpass-secret
-            namespace: openshift-config
+...
 ```
 
 ```bash

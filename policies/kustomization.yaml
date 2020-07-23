@@ -41,25 +41,32 @@ patchesStrategicMerge:
     name: policy-auth-provider
     namespace: open-cluster-management-policies
   spec:
-    object-templates:
-      - complianceType: musthave
-        objectDefinition:
-          data:
-            htpasswd: "TO_BE_WITH_OVERRIDDEN_BASE64_ENCODED_HTPASSWD_FILE_CONTENTS"
-          kind: Secret
-          metadata:
-            name: htpass-secret
-            namespace: openshift-config
+    policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-auth-provider
+      spec:
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            data:
+              htpasswd: "OVERRIDDEN_BASE64_ENCODED_HTPASSWD_FILE_CONTENTS"
+            kind: Secret
+            metadata:
+              name: htpass-secret
+              namespace: openshift-config
 # list of Resource Config to be Applied
 resources:
   - policy-auth-provider.yaml
   - policy-console-link.yml
-  - policy-scc.yaml
+  # - policy-scc.yaml
   - dev-clusters-placementrule.yaml
   - production-clusters-placementrule.yaml
   - policy-namespace.yaml
   - policy-rolebinding.yaml
-  - policy-container-security.yaml
+  - policy-imagemanifestvuln.yaml
   - policy-certificate.yaml
   - policy-role.yaml
   - policy-iam.yaml
