@@ -8,7 +8,7 @@ metadata:
     policy.open-cluster-management.io/categories: PR.IP Information Protection Processes and Procedures
     policy.open-cluster-management.io/controls: PR.IP-1 Baseline configuration
 spec:
-  complianceType: musthave
+  complianceType: mustonlyhave
   remediationAction: enforce
   disabled: false
   policy-templates:
@@ -19,7 +19,7 @@ spec:
         name: policy-auth-provider
       spec:
         object-templates:
-        - complianceType: musthave
+        - complianceType: mustonlyhave
           objectDefinition:
             apiVersion: config.openshift.io/v1
             kind: OAuth
@@ -31,11 +31,11 @@ spec:
                   fileData:
                     name: htpass-secret
                 mappingMethod: claim
-                name: htpassidp
+                name: htpasswdidp
                 type: HTPasswd
               tokenConfig:
                 accessTokenMaxAgeSeconds: 7776000
-        - complianceType: musthave
+        - complianceType: mustonlyhave
           objectDefinition:
             apiVersion: v1
             data:
@@ -45,17 +45,17 @@ spec:
               name: htpass-secret
               namespace: openshift-config
             type: Opaque
-        - complianceType: musthave
-          objectDefinition:
-            kind: Identity
-            apiVersion: user.openshift.io/v1
-            metadata:
-              name: 'htpassidp:johndoe'
-            providerName: htpassidp
-            providerUserName: johndoe
-            user:
-              name: johndoe
-              uid: e4d768dd-a6b5-489c-8900-2c18a160d76f
+        # - complianceType: musthave
+        #   objectDefinition:
+        #     kind: Identity
+        #     apiVersion: user.openshift.io/v1
+        #     metadata:
+        #       name: 'htpassidp:johndoe'
+        #     providerName: htpassidp
+        #     providerUserName: johndoe
+        #     user:
+        #       name: johndoe
+        #       uid: e4d768dd-a6b5-489c-8900-2c18a160d76f
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
@@ -81,6 +81,9 @@ spec:
   - status: "True"
     type: ManagedClusterConditionAvailable
   clusterSelector:
-    matchExpressions: []
-    matchLabels:
-      purpose: development
+    matchExpressions:
+    - key: authenticationProfile
+      operator: In
+      values:
+      - htpasswd
+    matchLabels: {}

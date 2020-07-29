@@ -28,9 +28,9 @@ spec:
               name: acm-console-link
             spec:
               applicationMenu:
-                imageURL: https://multicloud-console.apps.kilo.demo.red-chesterfield.com/multicloud/header/graphics/openshift.svg
+                imageURL: https://www.vectorlogo.zone/logos/openshift/openshift-icon.svg
                 section: Red Hat Applications
-              href: https://multicloud-console.apps.kilo.demo.red-chesterfield.com/multicloud/clusters
+              href: ""
               location: ApplicationMenu
               text: Managed By Red Hat Advanced Cluster Management
 ---
