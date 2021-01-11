@@ -4,9 +4,11 @@ kind: Channel
 metadata:
   name: wordpress-app-latest
   namespace: wordpress-app
+  annotations:
+    apps.open-cluster-management.io/github-path: examples/wordpress
 spec:
   type: GitHub
-  pathname: https://github.com/kubernetes-sigs/kustomize.git
+  pathname: https://github.com/jnpacker/kustomize.git
   # secretRef:
   #   name: github-credentials
 ---
@@ -44,24 +46,24 @@ spec:
       name: dev-clusters
   packageOverrides:
   - packageName: kustomization
-    packageOverrides:
-    - resources:
-      - wordpress
-      - mysql
-      patchesStrategicMerge:
-      - patch.yaml
-      namePrefix: demo-
-      vars:
-      - name: WORDPRESS_SERVICE
-        objref:
-          kind: Service
-          name: wordpress
-          apiVersion: v1
-      - name: MYSQL_SERVICE
-        objref:
-          kind: Service
-          name: mysql
-          apiVersion: v1
+    # packageOverrides:
+    # - resources:
+    #   - wordpress
+    #   - mysql
+    #   patchesStrategicMerge:
+    #   - patch.yaml
+    #   namePrefix: demo-
+    #   vars:
+    #   - name: WORDPRESS_SERVICE
+    #     objref:
+    #       kind: Service
+    #       name: wordpress
+    #       apiVersion: v1
+    #   - name: MYSQL_SERVICE
+    #     objref:
+    #       kind: Service
+    #       name: mysql
+    #       apiVersion: v1
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy

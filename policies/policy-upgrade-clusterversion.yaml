@@ -1,0 +1,89 @@
+# Upgrade Policy to select known desired version from public connected registry
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  name: upgrade-cluster
+  namespace: upgrade-policies
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: upgrade-cluster
+      spec:
+        namespaceSelector:
+          exclude:
+          - kube-*
+          include:
+          - '*'
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: config.openshift.io/v1
+            kind: ClusterVersion
+            metadata:
+              name: version
+            spec:
+              desiredUpdate:
+                force: false
+                image: ""
+                version: 4.5.9
+        remediationAction: enforce
+        severity: high
+  remediationAction: enforce
+status:
+  placement:
+  - placementBinding: binding-upgrade-cluster
+    placementRule: placement-upgrade-cluster
+  status:
+  - clustername: east1
+    clusternamespace: east1
+    compliant: Compliant
+---
+# Upgrade Policy to select specific zstream from upstream graph
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  name: upgrade-cluster-zstream
+  namespace: upgrade-policies
+spec:
+  disabled: true
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: upgrade-cluster
+      spec:
+        namespaceSelector:
+          exclude:
+          - kube-*
+          include:
+          - '*'
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: config.openshift.io/v1
+            kind: ClusterVersion
+            metadata:
+              name: version
+            spec:
+              channel: stable-4.5
+              desiredUpdate:
+                force: false
+                image: quay.io/openshift-release-dev/ocp-release@sha256:3ad6bab0bfb5642ef18ebbfc9f011da6cdcd950f5f8ccbf5b34c6c5cc0b4c289
+                version: ""
+              upstream: https://api.openshift.com/api/upgrades_info/v1/graph
+        remediationAction: inform
+        severity: high
+  remediationAction: enforce

@@ -1,0 +1,43 @@
+# Configure a specific upgrade version from a disconnected registry;
+# requires the cincinnati-operator to be present on the ManagedCluster
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: PR.IP Information Protection Processes
+      and Procedures
+    policy.open-cluster-management.io/controls: PR.IP-1 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST-CSF
+  name: policy-cincinatti-clusterversion
+  namespace: upgrade-policies
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-cluster-version
+      spec:
+        namespaceSelector:
+          exclude:
+          - kube-*
+          include:
+          - default
+        object-templates:
+        - apiVersion: config.openshift.io/v1
+          complianceType: musthave
+          kind: ClusterVersion
+          metadata:
+            name: version
+          objectDefinition:
+            spec:
+              channel: stable-4.5
+              upstream: http://disconnected-cincinnati-policy-engine-route-cincinnati-operator.apps.YOUR_CLUSTER_NAME.YOUR_BASE_DOMAIN/api/upgrades_info/v1/graph
+        remediationAction: inform
+        severity: low
+  remediationAction: inform
+status:
+  placement:
+  - placementBinding: binding-policy-cincinatti-clusterversion
+    placementRule: placement-policy-cincinatti-clusterversion

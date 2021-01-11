@@ -1,0 +1,219 @@
+# Configure the OpenShift Update Service (OSUS) also known informally as "Cincinnati".
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: PR.IP Information Protection Processes
+      and Procedures
+    policy.open-cluster-management.io/controls: PR.IP-1 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST-CSF
+  name: policy-cincinatti-operator
+  namespace: upgrade-policies
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: cincinatti-policy-prod
+      spec:
+        namespaceSelector:
+          exclude:
+          - kube-*
+          include:
+          - default
+        object-templates:
+          apiVersion: cincinnati.openshift.io/v1beta1
+          kind: Cincinnati
+          metadata:
+            name: example-cincinnati
+          spec:
+            registry: quay.io
+            replicas: 1
+            repository: openshift-release-dev/ocp-release
+        remediationAction: inform
+        severity: low
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: cincinatti-policy-subscription
+      spec:
+        namespaceSelector:
+          exclude:
+          - kube-*
+          include:
+          - default
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: operators.coreos.com/v1alpha1
+            kind: Subscription
+            metadata:
+              name: cincinnati-subscription
+              namespace: cincinnati-operator
+            spec:
+              channel: alpha
+              installPlanApproval: Automatic
+              name: cincinnati-operator
+              source: redhat-operators
+              sourceNamespace: openshift-marketplace
+        remediationAction: inform
+        severity: low
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: cincinatti-policy-operatorgroup
+      spec:
+        namespaceSelector:
+          exclude:
+          - kube-*
+          include:
+          - default
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: operators.coreos.com/v1
+            kind: OperatorGroup
+            metadata:
+              name: cincinnati-operatorgroup
+              namespace: cincinnati-operator
+            spec:
+              targetNamespaces:
+              - cincinnati-operator
+        remediationAction: inform
+        severity: low
+  remediationAction: enforce
+status:
+  placement:
+  - placementBinding: binding-policy-cincinatti-operator
+    placementRule: placement-policy-cincinatti-operator
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: PR.IP Information Protection Processes
+      and Procedures
+    policy.open-cluster-management.io/controls: PR.IP-1 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST-CSF
+  name: policy-config-imageconfig
+  namespace: upgrade-policies
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-config-imageconfig-prod
+      spec:
+        namespaceSelector:
+          exclude:
+          - kube-*
+          include:
+          - default
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: config.openshift.io/v1
+            kind: Image
+            metadata:
+              name: cluster
+            spec:
+              additionalTrustedCA:
+                name: trusted-ca
+        remediationAction: inform
+        severity: low
+  remediationAction: enforce
+status:
+  placement:
+  - placementBinding: binding-policy-config-imageconfig
+    placementRule: placement-policy-config-imageconfig
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: PR.IP Information Protection Processes
+      and Procedures
+    policy.open-cluster-management.io/controls: PR.IP-1 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST-CSF
+  name: policy-configmap-ca
+  namespace: upgrade-policies
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: configmapca
+      spec:
+        namespaceSelector:
+          exclude:
+          - kube-*
+          include:
+          - default
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            data:
+              cincinnati-registry: |-
+                -----BEGIN CERTIFICATE-----
+                YOUR_DISCONNECTED_REGISTRY_CERTIFICATE
+                -----END CERTIFICATE-----
+            kind: ConfigMap
+            metadata:
+              name: trusted-ca
+              namespace: openshift-config
+        remediationAction: inform
+        severity: low
+  remediationAction: enforce
+status:
+  placement:
+  - placementBinding: binding-policy-configmap-ca
+    placementRule: placement-policy-configmap-ca
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: PR.IP Information Protection Processes
+      and Procedures
+    policy.open-cluster-management.io/controls: PR.IP-1 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST-CSF
+  name: policy-namespace-operatorgroup
+  namespace: upgrade-policies
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-namespace-operatorgroup-prod
+      spec:
+        namespaceSelector:
+          exclude:
+          - kube-*
+          include:
+          - default
+        object-templates:
+        - complianceType: musthave
+          objectDefinition:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: cincinnati-operator
+        remediationAction: inform
+        severity: low
+  remediationAction: enforce
+status:
+  placement:
+  - placementBinding: binding-policy-namespace-operatorgroup
+    placementRule: placement-policy-namespace-operatorgroup
+# END Policies for cincinnati-operator

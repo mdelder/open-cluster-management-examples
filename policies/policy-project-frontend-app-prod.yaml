@@ -1,7 +1,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-namespace
+  name: policy-project-frontend-app-prod
   namespace: open-cluster-management-policies
   annotations:
     policy.open-cluster-management.io/standards: NIST-CSF
@@ -15,21 +15,21 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-securitycontextconstraints-example
+        name: policy-project-frontend-app-prod
       spec:
         namespaceSelector:
           exclude:
           - kube-*
           include:
           - default
-          - prod-apps
+          - frontend-app-prod
         object-templates:
         - complianceType: musthave
           objectDefinition:
-            apiVersion: v1
-            kind: Namespace
+            apiVersion: project.openshift.io/v1
+            kind: Project
             metadata:
-              name: prod-apps
+              name: frontend-app-prod
           status:
             Validity: {}
         - complianceType: musthave
@@ -38,7 +38,7 @@ spec:
             kind: LimitRange
             metadata:
               name: mem-limit-range
-              namespace: prod-apps
+              namespace: frontend-app-prod
             spec:
               limits:
                 - default:
@@ -50,21 +50,21 @@ spec:
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-  name: binding-policy-namespace
+  name: binding-policy-project-frontend-app-prod
   namespace: open-cluster-management-policies
 placementRef:
   name: production-clusters
   kind: PlacementRule
   apiGroup: apps.open-cluster-management.io
 subjects:
-- name: policy-namespace
+- name: policy-project-frontend-app-prod
   kind: Policy
   apiGroup: policy.open-cluster-management.io
 ---
 apiVersion: apps.open-cluster-management.io/v1
 kind: PlacementRule
 metadata:
-  name: placement-policy-namespace
+  name: placement-policy-project-frontend-app-prod
   namespace: open-cluster-management-policies
 spec:
   clusterConditions:
