@@ -1,0 +1,63 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-hibernation
+  namespace: open-cluster-management-policies
+  annotations:
+    policy.open-cluster-management.io/standards: NIST-CSF
+    policy.open-cluster-management.io/categories: PR.IP Information Protection Processes and Procedures
+    policy.open-cluster-management.io/controls: PR.IP-1 Baseline configuration
+spec:
+  remediationAction: enforce
+  disabled: true
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-hibernation
+      spec:
+        severity: high
+        namespaceSelector:
+          exclude:
+            - kube-*
+            - openshift-*
+          include:
+            - '*'
+        object-templates:
+          - complianceType: musthave
+            objectDefinition:
+              apiVersion: hive.openshift.io/v1
+              kind: ClusterDeployment
+              metadata:
+                name: foxtrot-gcp-europe
+                namespace: foxtrot-gcp-europe
+              spec:
+                powerState: Hibernating
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-policy-hibernation
+  namespace: open-cluster-management-policies
+placementRef:
+  name: placement-policy-hibernation
+  kind: PlacementRule
+  apiGroup: apps.open-cluster-management.io
+subjects:
+- name: policy-hibernation
+  kind: Policy
+  apiGroup: policy.open-cluster-management.io
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: placement-policy-hibernation
+  namespace: open-cluster-management-policies
+spec:
+  clusterConditions:
+  - status: "True"
+    type: ManagedClusterConditionAvailable
+  clusterSelector:
+    matchExpressions:
+      - {key: name, operator: In, values: ["local-cluster"]}

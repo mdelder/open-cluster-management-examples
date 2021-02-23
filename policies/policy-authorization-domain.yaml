@@ -1,0 +1,68 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-authorization-domain
+  namespace: open-cluster-management-policies
+  annotations:
+    policy.open-cluster-management.io/standards: NIST-CSF
+    policy.open-cluster-management.io/categories: PR.IP Information Protection Processes and Procedures
+    policy.open-cluster-management.io/controls: PR.IP-1 Baseline configuration
+spec:
+  remediationAction: inform
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: policy-authorization-domain
+      spec:
+        remediationAction: inform
+        severity: high
+        namespaceSelector:
+          exclude:
+            - kube-*
+            - openshift-*
+          include:
+            - '*'
+        object-templates:
+          - complianceType: musthave
+            objectDefinition:
+              apiVersion: work.open-cluster-management.io/v1
+              kind: ManifestWork
+              metadata:
+                labels:
+                    app: sso
+              status:
+                conditions:
+                - message: Apply manifest work complete
+                  reason: AppliedManifestWorkComplete
+                  status: "True"
+                  type: Applied
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-policy-authorization-domain
+  namespace: open-cluster-management-policies
+placementRef:
+  name: placement-policy-authorization-domain
+  kind: PlacementRule
+  apiGroup: apps.open-cluster-management.io
+subjects:
+- name: policy-authorization-domain
+  kind: Policy
+  apiGroup: policy.open-cluster-management.io
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: placement-policy-authorization-domain
+  namespace: open-cluster-management-policies
+spec:
+  clusterConditions:
+  - status: "True"
+    type: ManagedClusterConditionAvailable
+  clusterSelector:
+    matchExpressions:
+      - {key: name, operator: In, values: ["local-cluster"]}

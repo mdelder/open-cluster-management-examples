@@ -1,0 +1,29 @@
+# kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# namespace to deploy all Resources to
+namespace: open-cluster-management-policies
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+# list of Resource Config to be Applied
+resources:
+  - dev-clusters-placementrule.yaml
+  - production-clusters-placementrule.yaml
+  - policy-rolebinding.yaml
+  - policy-image-vulnerabilities.yaml
+  - policy-certificate.yaml
+  - policy-role.yaml
+  - policy-iam.yaml
+  - policy-opa-gatekeeper.yaml
+  - policy-project-frontend-app-prod.yaml
+  - policy-upgrade-clusterversion.yaml
+  - policy-cincinatti-operator.yaml
+  - policy-disconnected-upgrade.yaml
+  - policy-etcdencryption.yaml
+  - policy-hibernation.yaml
+  - policy-group-demo-admins.yaml
+  - rhsso-operator.yaml
+  # - policy-authorization-domain.yaml
