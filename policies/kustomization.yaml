@@ -25,5 +25,5 @@ resources:
   - policy-etcdencryption.yaml
   - policy-hibernation.yaml
   - policy-group-demo-admins.yaml
-  - rhsso-operator.yaml
+  - policy-rhsso-operator.yaml
   # - policy-authorization-domain.yaml
