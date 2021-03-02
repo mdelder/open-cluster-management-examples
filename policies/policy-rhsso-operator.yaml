@@ -39,8 +39,8 @@ spec:
           remediationAction: enforce # will be overridden by remediationAction in parent policy
           severity: high
           namespaceSelector:
-            exclude: ["kube-*"]
-            include: ["*"]
+            exclude: ["kube-*", "openshift-*"]
+            include: ["keycloak"]
           object-templates:
             - complianceType: musthave
               objectDefinition:
@@ -61,8 +61,8 @@ spec:
           remediationAction: enforce # will be overridden by remediationAction in parent policy
           severity: high
           namespaceSelector:
-            exclude: ["kube-*"]
-            include: ["*"]
+            exclude: ["kube-*", "openshift-*"]
+            include: ["keycloak"]
           object-templates:
             - complianceType: musthave
               objectDefinition:
@@ -77,7 +77,7 @@ spec:
                   name: rhsso-operator
                   source: redhat-operators
                   sourceNamespace: openshift-marketplace
-                  startingCSV: rhsso-operator.7.4.4
+                  startingCSV: rhsso-operator.7.4.5
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
