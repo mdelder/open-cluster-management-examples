@@ -78,6 +78,31 @@ spec:
                   source: redhat-operators
                   sourceNamespace: openshift-marketplace
                   startingCSV: rhsso-operator.7.4.5
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-rhsso-operator
+        spec:
+          remediationAction: enforce # will be overridden by remediationAction in parent policy
+          severity: high
+          namespaceSelector:
+            exclude: ["kube-*", "openshift-*"]
+            include: ["keycloak"]
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: keycloak.org/v1alpha1
+                kind: Keycloak
+                metadata:
+                  namespace: keycloak
+                  name: keycloak
+                  labels:
+                    app: sso
+                spec:
+                  externalAccess:
+                    enabled: true
+                  instances: 1
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
