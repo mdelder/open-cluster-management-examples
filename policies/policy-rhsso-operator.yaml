@@ -82,7 +82,7 @@ spec:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
         metadata:
-          name: policy-rhsso-operator
+          name: policy-rhsso-keycloak
         spec:
           remediationAction: enforce # will be overridden by remediationAction in parent policy
           severity: high
