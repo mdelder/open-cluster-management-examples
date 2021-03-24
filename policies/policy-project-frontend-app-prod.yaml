@@ -53,7 +53,7 @@ metadata:
   name: binding-policy-project-frontend-app-prod
   namespace: open-cluster-management-policies
 placementRef:
-  name: production-clusters
+  name: placement-policy-project-frontend-app-prod
   kind: PlacementRule
   apiGroup: apps.open-cluster-management.io
 subjects:
@@ -70,5 +70,4 @@ spec:
   clusterConditions:
   - status: "True"
     type: ManagedClusterConditionAvailable
-  clusterSelector:
-    matchExpressions: []
+  clusterSelector: {}

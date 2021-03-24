@@ -1,7 +1,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-hibernation
+  name: policy-cluster-resume
   namespace: open-cluster-management-policies
   annotations:
     policy.open-cluster-management.io/standards: NIST-CSF
@@ -15,7 +15,7 @@ spec:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-hibernation
+        name: policy-cluster-resume
       spec:
         severity: high
         namespaceSelector:
@@ -33,12 +33,12 @@ spec:
                 name: foxtrot-gcp-europe
                 namespace: foxtrot-gcp-europe
               spec:
-                powerState: Hibernating
+                powerState: Running
   - objectDefinition:
       apiVersion: policy.open-cluster-management.io/v1
       kind: ConfigurationPolicy
       metadata:
-        name: policy-managedcluster-label
+        name: policy-cluster-resume-label
       spec:
         severity: high
         namespaceSelector:
@@ -55,6 +55,7 @@ spec:
               metadata:
                 name: foxtrot-gcp-europe
                 labels:
+                  apps.ship-tracker: deployed
                   cloud: Google
                   clusterID: 5a5dff7f-0f3e-4ad9-ade3-e78cc21c1890
                   enforceSecureImages: "true"
@@ -63,56 +64,26 @@ spec:
                   vendor: OpenShift
               spec:
                 hubAcceptsClient: true
-                leaseDurationSeconds: 5
-              status:
-                conditions:
-                - reason: ManagedClusterAvailable
-                  status: "False"
-                  type: ManagedClusterConditionAvailable
-  - objectDefinition:
-      apiVersion: policy.open-cluster-management.io/v1
-      kind: ConfigurationPolicy
-      metadata:
-        name: policy-cluster-lease-removal
-      spec:
-        severity: high
-        namespaceSelector:
-          exclude:
-            - kube-*
-            - openshift-*
-          include:
-            - foxtrot-gcp-europe
-        object-templates:
-          - complianceType: mustnothave
-            objectDefinition:
-              apiVersion: coordination.k8s.io/v1
-              kind: Lease
-              metadata:
-                labels:
-                  open-cluster-management.io/cluster-name: foxtrot-gcp-europe
-                name: cluster-lease-foxtrot-gcp-europe
-                namespace: foxtrot-gcp-europe
-              spec:
-                holderIdentity: cluster-lease-foxtrot-gcp-europe
+                leaseDurationSeconds: 60
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-  name: binding-policy-hibernation
+  name: binding-policy-cluster-resume
   namespace: open-cluster-management-policies
 placementRef:
-  name: placement-policy-hibernation
+  name: placement-policy-cluster-resume
   kind: PlacementRule
   apiGroup: apps.open-cluster-management.io
 subjects:
-- name: policy-hibernation
+- name: policy-cluster-resume
   kind: Policy
   apiGroup: policy.open-cluster-management.io
 ---
 apiVersion: apps.open-cluster-management.io/v1
 kind: PlacementRule
 metadata:
-  name: placement-policy-hibernation
+  name: placement-policy-cluster-resume
   namespace: open-cluster-management-policies
 spec:
   clusterConditions:
