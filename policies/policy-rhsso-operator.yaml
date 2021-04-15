@@ -102,6 +102,8 @@ spec:
                 spec:
                   externalAccess:
                     enabled: true
+                  external:
+                    enabled: true
                   instances: 1
 ---
 apiVersion: policy.open-cluster-management.io/v1
