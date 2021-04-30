@@ -92,6 +92,38 @@ spec:
           object-templates:
             - complianceType: musthave
               objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: RoleBinding
+                metadata:
+                  name: rhsso-operator-route-editor
+                  namespace: keycloak
+                roleRef:
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: ClusterRole
+                  name: route-editor
+                subjects:
+                - kind: ServiceAccount
+                  name: rhsso-operator
+                  namespace: keycloak
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: ClusterRole
+                metadata:
+                  name: route-editor
+                rules:
+                - apiGroups:
+                  - route.openshift.io
+                  resources:
+                  - routes/custom-host
+                  verbs:
+                  - create
+                  - update
+                  - list
+                  - get
+                  - patch
+            - complianceType: musthave
+              objectDefinition:
                 apiVersion: keycloak.org/v1alpha1
                 kind: Keycloak
                 metadata:
