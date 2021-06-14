@@ -35,6 +35,7 @@ spec:
                   - jpacker@redhat.com
                   - Hicham.Mourad@gmail.com
                   - hmourad@redhat.com
+                  - chernand@redhat.com
     - objectDefinition:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
